@@ -7,7 +7,6 @@ var express = require('express');
 
 
 var appFactory = function(){
-    var appIndex = 0;
 
     return function (){
         var app = express();
@@ -19,44 +18,75 @@ var appFactory = function(){
             app.use(express.methodOverride());
             app.use(app.router);
         });
-
-        appIndex++;
         return app;
     };
 };
+var appCreator = appFactory();
 
-if (!module.parent) {
-    var appCreator = appFactory();
-    var app = appCreator();
 
-    //set up jade engine directives
-    app.set('views', __dirname + '/tpl');
-    app.set('view engine', "jade");
-    app.engine('jade', require('jade').__express);
-    //set up static logic directive
-    app.use(express.static(__dirname + '/public'));
 
-    app.get("/", function(req, res){
-        res.render("index");
+
+/**--------the relay notification logic--------**/
+var userPool = {};
+//make socket.io listen to external port
+io = require('socket.io').listen(Config.externalPort());
+
+io.sockets.on('connection', function (socket) {
+    //after connection, user sends a register socket, which will register the cur user in userPool for notification
+    socket.on("register", function(data) {
+        console.log('receving register event with data: ');
+        console.log(data);
+        //store the socketId in the pool, socketId is the identifier of the cur user's socket session
+        userPool[data.id] = socket.id;
     });
+});
 
-    //make app listen to external port, then forward this port to socket.io for broadcasting
-    io = require('socket.io').listen(app.listen(Config.externalPort()));
+//create a new server 
+var serverConnector = appCreator();
+//listen to internal POST port, which is 8017
+serverConnector.listen(Config.internalPort());
+//make the new server listen to localhost:8017/api/v1.0/notifications/push
+serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
+    console.log('test push received with params:');
+    console.log(req.body['targetUserId']);
 
-    io.sockets.on('connection', function (socket) {
-        socket.emit('handShake', { message: 'socket.io initial connection established'});
-    });
+    var targetUserId = req.body['targetUserId'];
+    var targetSocketId = userPool[targetUserId];
+    //push the notification to the specific client with given id
+    io.sockets.socket(targetSocketId).emit('push', {'id': targetUserId});
+});
 
-    var EMMA = require('./Ecosystem_Median_Messaging_Asynchronous.js'),
-        emma = new EMMA();
-    //wait for the post command, and launch the notifications
-    var serverConnector = appCreator();
-    serverConnector.listen(Config.internalPort());
+console.log("express app now listening to intenal port " + Config.internalPort() + " and external port " + Config.externalPort());
 
-    serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
-        emma(io, req.body);
-    });
 
-    console.log("express app now listening to intenal port " + Config.internalPort() + " and external port " + Config.externalPort());
-}
+
+
+/**--------create a simple http server to indicate server alive--------**/
+var app = appCreator();
+app.listen(8018);
+//set up jade engine directives
+app.set('views', __dirname + '/tpl');
+app.set('view engine', 'jade');
+app.engine('jade', require('jade').__express);
+//set up static logic directive
+app.use(express.static(__dirname + '/public'));
+
+app.get('/', function(req, res){
+    res.render('index');
+});
+
+app.get('/testBroadcast', function(req, res){
+    console.log('test broadcast received');
+    io.sockets.socket().emit('broadcast', {'content': 'le me de SocketServer still alive'});
+    res.end();
+});
+
+app.get('/testPush/:id?', function(req, res){
+    console.log('test push received with params:');
+    console.log(req.params.id);
+    var targetSocketId = userPool[req.params.id];
+    io.sockets.socket(targetSocketId).emit('push', {'id': req.params.id});
+    res.end();
+});
+
 

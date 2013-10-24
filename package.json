@@ -1,6 +1,6 @@
 {
     "name": "EcosystemMedianMessagingAsynchronous",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Relay Server for the badstudent",
     "dependencies": {
         "socket.io": "latest",

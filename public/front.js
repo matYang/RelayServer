@@ -10,6 +10,16 @@ window.onload = function(){
         content.innerHTML = html;
     };
 
+    socket.emit('register', {'id': 1});
+    socket.on('push', function(data){
+        alert('Push Notification received, with id' + data.id);
+        console.log("message received");
+    });
+    socket.on('broadCast', function(){
+        alert('Broadcast received');
+        console.log("message received");
+    });
+
     socket.on('handShake', function (data) {
         if(data.message) {
             messages.push(data.message);
