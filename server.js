@@ -51,9 +51,11 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     console.log(req.body);
     
     var n_arr = JSON.parse(req.body);
+    var targetUserId = -1;
+    var targetSocketId = -1;
     for (var index = 0; index < n_arr.length; index++){
-        var targetUserId = n_arr[index].targetUserId;
-        var targetSocketId = userPool[targetUserId];
+        targetUserId = n_arr[index].targetUserId;
+        targetSocketId = userPool[targetUserId];
         //push the notification to the specific client with given id
         io.sockets.socket(targetSocketId).emit('push', {'id': targetUserId});
     }
