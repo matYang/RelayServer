@@ -49,7 +49,7 @@ serverConnector.listen(Config.internalPort());
 serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     console.log('test push received with params:');
     console.log(req.body['targetUserId']);
-
+    console.log(req.body);
     var targetUserId = req.body['targetUserId'];
     var targetSocketId = userPool[targetUserId];
     //push the notification to the specific client with given id
