@@ -48,12 +48,16 @@ serverConnector.listen(Config.internalPort());
 //make the new server listen to localhost:8017/api/v1.0/notifications/push
 serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     console.log('test push received with params:');
-    console.log(req.body['targetUserId']);
-
-    var targetUserId = req.body['targetUserId'];
-    var targetSocketId = userPool[targetUserId];
-    //push the notification to the specific client with given id
-    io.sockets.socket(targetSocketId).emit('push', {'id': targetUserId});
+    console.log(req.body);
+    
+    var n_arr = JSON.parse(req.body);
+    for (var index = 0; index < n_arr.length; index++){
+        var targetUserId = n_arr[index].targetUserId;
+        var targetSocketId = userPool[targetUserId];
+        //push the notification to the specific client with given id
+        io.sockets.socket(targetSocketId).emit('push', {'id': targetUserId});
+    }
+    
 });
 
 console.log("express app now listening to intenal port " + Config.internalPort() + " and external port " + Config.externalPort());
