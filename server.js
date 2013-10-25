@@ -28,6 +28,33 @@ var appCreator = appFactory();
 
 /**--------the relay notification logic--------**/
 var userPool = {};
+var socketPool = {};
+
+var on_user_register = function(userId, socketId){
+    socketPool[socketId] = userId;
+    if (typeof userPool[userId] === 'undefined'){
+        userPool[userId] = [];
+    }
+    userPool[userId].append(socketId);
+};
+
+var on_user_disconnect = function(socketId){
+    var userId = socketPool[socketId];
+    if (typeof userId !== 'undefined'){
+        if (userPool[userId] !== 'undefined'){
+            var index = userPool[userId].indexOf(socketId);
+            if (index > -1){
+                userPool[userId].splice(index, 1);
+            }
+
+            if (userPool[userId].length === 0){
+                delete userPool.userId;
+            }
+        }
+    }
+};
+
+
 //make socket.io listen to external port
 io = require('socket.io').listen(Config.externalPort());
 
@@ -37,7 +64,12 @@ io.sockets.on('connection', function (socket) {
         console.log('receving register event with data: ');
         console.log(data);
         //store the socketId in the pool, socketId is the identifier of the cur user's socket session
-        userPool[data.id] = socket.id;
+        on_user_register(data.id, socket.id);
+    });
+
+    socket.on('disconnect', function () {
+        console.log('socket with id: ' + socket.id + ' has disconnected');
+        on_user_disconnect(socket.id);
     });
 });
 
@@ -50,15 +82,19 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     console.log('test push received with params:');
     console.log(req.body);
     
-    var n_arr = JSON.parse(req.body);
+    var n_arr = req.body;
     var targetUserId = -1;
-    var targetSocketId = -1;
+    var targetSocketId = [];
     for (var index = 0; index < n_arr.length; index++){
         targetUserId = n_arr[index].targetUserId;
-        targetSocketId = userPool[targetUserId];
-        //push the notification to the specific client with given id
-        io.sockets.socket(targetSocketId).emit('push', {'id': targetUserId});
+        targetSocketId_arr = userPool[targetUserId];
+
+        for (var j = 0; j < n_arr.length(); j++){
+            io.sockets.socket(targetSocketId_arr[j]).emit('push', {'id': targetUserId});
+        }
+        
     }
+    res.end();
     
 });
 
