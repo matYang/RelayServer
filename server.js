@@ -62,11 +62,12 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     for (var index = 0; index < n_arr.length; index++){
         targetUserId = n_arr[index].targetUserId;
         targetSocketId_arr = socketManager.getSessionsByUser(targetUserId);
-
-        for (var j = 0; j < targetSocketId_arr.length; j++){
-            io.sockets.socket(targetSocketId_arr[j].id).emit('push', {'id': targetUserId});
+    
+        if (typeof targetSocketId_arr !== undefined){
+            for (var j = 0; j < targetSocketId_arr.length; j++){
+                io.sockets.socket(targetSocketId_arr[j].id).emit('push', {'id': targetUserId});
+            }
         }
-        
     }
     res.end();
     
