@@ -65,7 +65,7 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     
         if (typeof targetSocketId_arr !== undefined){
             for (var j = 0; j < targetSocketId_arr.length; j++){
-                io.sockets.socket(targetSocketId_arr[j].id).emit('push', {'id': targetUserId});
+                io.sockets.socket(targetSocketId_arr[j]).emit('push', {'id': targetUserId});
             }
         }
     }
@@ -104,7 +104,7 @@ app.get('/testPush/:id?', function(req, res){
     
     var targetSocketId_arr = socketManager.getSessionsByUser(req.params.id);
     for (var j = 0; j < targetSocketId_arr.length; j++){
-        io.sockets.socket(targetSocketId_arr[j].id).emit('push', {'id': (req.params.id});
+        io.sockets.socket(targetSocketId_arr[j]).emit('push', {'id': req.params.id});
     }
     res.end();
 });
