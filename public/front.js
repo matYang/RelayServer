@@ -11,8 +11,8 @@ window.onload = function(){
     };
 
     socket.emit('register', {'id': 1});
-    socket.on('push', function(data){
-        alert('Push Notification received, with id' + data.id);
+    socket.on('newNotification', function(data){
+        alert('Push Notification received: newNotification, with id' + data.id);
         console.log("message received");
     });
     socket.on('broadCast', function(){

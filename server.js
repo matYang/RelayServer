@@ -65,7 +65,7 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     
         if (typeof targetSocketId_arr !== undefined){
             for (var j = 0; j < targetSocketId_arr.length; j++){
-                io.sockets.socket(targetSocketId_arr[j]).emit('push', {'id': targetUserId});
+                io.sockets.socket(targetSocketId_arr[j]).emit('newNotification', {'id': targetUserId});
             }
         }
     }
