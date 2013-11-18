@@ -9,6 +9,8 @@ module.exports = function Config(){
 
 	var _Internal_NotificationPush_Path = "/api/v1.0/notifications/push";
 
+	var _Internal_LetterPush_Path = "/api/v1.0/letter/push";
+
 	return {
 		'internalPort': function (){
 			return _Internal_Port;
@@ -24,6 +26,10 @@ module.exports = function Config(){
 
 		'internalNotificationPushPath': function(){
 			return _Internal_NotificationPush_Path;
+		},
+
+		'internalLetterPushPath': function(){
+			return _Internal_LetterPush_Path;
 		}
 	};
 };

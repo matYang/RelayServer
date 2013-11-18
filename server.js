@@ -47,13 +47,14 @@ io.sockets.on('connection', function (socket) {
     });
 });
 
+
 //create a new server 
 var serverConnector = appCreator();
 //listen to internal POST port, which is 8017
 serverConnector.listen(Config.internalPort());
 //make the new server listen to localhost:8017/api/v1.0/notifications/push
 serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
-    console.log('test push received with params:');
+    console.log('notification push received with params:');
     console.log(req.body);
     
     var n_arr = req.body;
@@ -72,10 +73,25 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     res.end();
     
 });
+serverConnector.post(Config.internalLetterPushPath(), function(req, res){
+    console.log('letter push received with params:');
+    console.log(req.body);
+    
+    var targetUserId = req.body.to_userId,
+        targetSocketId_arr = socketManager.getSessionsByUser(targetUserId);
+    
+    if (typeof targetSocketId_arr !== undefined){
+        for (var j = 0; j < targetSocketId_arr.length; j++){
+            io.sockets.socket(targetSocketId_arr[j]).emit('newLetter', {'id': targetUserId});
+        }
+    }
+
+    res.end();
+});
+
+
 
 console.log("express app now listening to intenal port " + Config.internalPort() + " and external port " + Config.externalPort());
-
-
 
 
 /**--------create a simple http server to indicate server alive--------**/
