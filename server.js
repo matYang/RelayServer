@@ -78,11 +78,12 @@ serverConnector.post(Config.internalLetterPushPath(), function(req, res){
     console.log(req.body);
     
     var targetUserId = req.body.to_userId,
+        from_userId = req.body.from_userId,
         targetSocketId_arr = socketManager.getSessionsByUser(targetUserId);
     
     if (typeof targetSocketId_arr !== undefined){
         for (var j = 0; j < targetSocketId_arr.length; j++){
-            io.sockets.socket(targetSocketId_arr[j]).emit('newLetter', {'id': targetUserId});
+            io.sockets.socket(targetSocketId_arr[j]).emit('newLetter', {'to_userId': targetUserId, 'from_userId': from_userId});
         }
     }
 
