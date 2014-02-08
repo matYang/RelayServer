@@ -23,14 +23,25 @@ var appFactory = function(){
 };
 var appCreator = appFactory();
 
+
+
+
 var SocketManager = require('./SocketManager.js'),
-    socketManager = new SocketManager();
+    socketManager = new SocketManager(),
 
+    fs = require('fs'),
+    ioOptions = {
+        key: fs.readFileSync('./cert/client.key'),
+        cert: fs.readFileSync('./cert/client.crt'),
+        requestCert: true
+    },
+    ioServer = require('https').createServer(ioOptions, appCreator());
 
-
+    io = require("socket.io").listen(server);
+    ioServer.listen(3000);
 
 //make socket.io listen to external port
-io = require('socket.io').listen(Config.externalPort());
+//io = require('socket.io').listen(Config.externalPort());
 
 io.sockets.on('connection', function (socket) {
     //after connection, user sends a register socket, which will register the cur user in userPool for notification
@@ -46,6 +57,7 @@ io.sockets.on('connection', function (socket) {
         socketManager.on_user_disconnect(socket.id);
     });
 });
+
 
 
 //create a new server 
@@ -64,7 +76,7 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
         targetUserId = n_arr[index].targetUserId;
         targetSocketId_arr = socketManager.getSessionsByUser(targetUserId);
     
-        if (typeof targetSocketId_arr !== undefined){
+        if (typeof targetSocketId_arr !== 'undefined'){
             for (var j = 0; j < targetSocketId_arr.length; j++){
                 io.sockets.socket(targetSocketId_arr[j]).emit('newNotification', {'id': targetUserId});
             }
@@ -81,7 +93,7 @@ serverConnector.post(Config.internalLetterPushPath(), function(req, res){
         from_userId = req.body.from_userId,
         targetSocketId_arr = socketManager.getSessionsByUser(targetUserId);
     
-    if (typeof targetSocketId_arr !== undefined){
+    if (typeof targetSocketId_arr !== 'undefined'){
         for (var j = 0; j < targetSocketId_arr.length; j++){
             io.sockets.socket(targetSocketId_arr[j]).emit('newLetter', {'to_userId': targetUserId, 'from_userId': from_userId});
         }
