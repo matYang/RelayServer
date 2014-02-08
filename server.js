@@ -31,13 +31,13 @@ var SocketManager = require('./SocketManager.js'),
 
     fs = require('fs'),
     ioOptions = {
-        key: fs.readFileSync('./cert/client.key'),
-        cert: fs.readFileSync('./cert/client.crt'),
+        key: fs.readFileSync('/etc/apache2/ssl/privatekey.pem'),
+        cert: fs.readFileSync('/etc/apache2/ssl/www_routea_ca.crt'),
         requestCert: true
     },
     ioServer = require('https').createServer(ioOptions, appCreator());
 
-    io = require("socket.io").listen(server);
+    io = require("socket.io").listen(ioServer);
     ioServer.listen(3000);
 
 //make socket.io listen to external port
