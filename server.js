@@ -32,8 +32,7 @@ var SocketManager = require('./SocketManager.js'),
     fs = require('fs'),
     ioOptions = {
         key: fs.readFileSync('/etc/apache2/ssl/privatekey.pem'),
-        cert: fs.readFileSync('/etc/apache2/ssl/www_routea_ca.crt'),
-        requestCert: true
+        cert: fs.readFileSync('/etc/apache2/ssl/www_routea_ca.crt')
     },
     ioServer = require('https').createServer(ioOptions, appCreator());
 
