@@ -39,16 +39,11 @@ var SocketManager = require('./SocketManager.js'),
     ioServer = require('https').createServer(ioOptions, appCreator());
 
     io = require("socket.io").listen(ioServer);
-    ioServer.listen(3000);
+    ioServer.listen(Config.externalPort());
 
-//test url
-ioServer.get('/', function(req, res){
-    res.end();
-});
 
-//make socket.io listen to external port
-//io = require('socket.io').listen(Config.externalPort());
 
+//make socket.io listen to ioServer which uses https
 io.sockets.on('connection', function (socket) {
     //after connection, user sends a register socket, which will register the cur user in userPool for notification
     socket.on("register", function(data) {
@@ -100,19 +95,26 @@ serverConnector.post(Config.internalLetterPushPath(), function(req, res){
     console.log('letter push received with params:');
     console.log(req.body);
     
-    var targetUserId = req.body.to_userId,
-        from_userId = req.body.from_userId,
-        targetSocketId_arr = socketManager.getSessionsByUser(targetUserId);
-    
+    var targetUserId = parseInt(req.body.to_userId, 10),
+        from_userId = parseInt(req.body.from_userId, 10),
+        targetSocketId_arr = socketManager.getSessionsByUser(targetUserId),
+        fromSocketId_arr = socketManager.getSessionsByUser(from_userId),
+        j = 0;
+
+    //send to target user
     if (typeof targetSocketId_arr !== 'undefined'){
-        for (var j = 0; j < targetSocketId_arr.length; j++){
-            io.sockets.socket(targetSocketId_arr[j]).emit('newLetter', {'to_userId': targetUserId, 'from_userId': from_userId});
+        for (j = 0; j < targetSocketId_arr.length; j++){
+            io.sockets.socket(targetSocketId_arr[j]).emit('newLetter', req.body);
         }
     }
-
+    //forward to original user
+    if (typeof fromSocketId_arr !== 'undefined'){
+        for (j = 0; j < fromSocketId_arr.length; j++){
+            io.sockets.socket(fromSocketId_arr[j]).emit('newLetter', req.body);
+        }
+    }
     res.end();
 });
-
 console.log("express app now listening to intenal port " + Config.internalPort() + " and external port " + Config.externalPort());
 
 
@@ -140,15 +142,15 @@ app.get('/testBroadcast', function(req, res){
     res.end();
 });
 
-app.get('/testPush/:id?', function(req, res){
-    console.log('test push received with params:');
-    console.log(req.params.id);
+// app.get('/testPush/:id?', function(req, res){
+//     console.log('test push received with params:');
+//     console.log(req.params.id);
     
-    var targetSocketId_arr = socketManager.getSessionsByUser(req.params.id);
-    for (var j = 0; j < targetSocketId_arr.length; j++){
-        io.sockets.socket(targetSocketId_arr[j]).emit('push', {'id': req.params.id});
-    }
-    res.end();
-});
+//     var targetSocketId_arr = socketManager.getSessionsByUser(req.params.id);
+//     for (var j = 0; j < targetSocketId_arr.length; j++){
+//         io.sockets.socket(targetSocketId_arr[j]).emit('push', {'id': req.params.id});
+//     }
+//     res.end();
+// });
 
 
