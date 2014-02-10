@@ -1,7 +1,9 @@
 //the simplest relay server
 
 var ConfigBase = require('./Config.js'),
-    Config = new ConfigBase();
+    EnvironmentConfigBase = require('./Environment.js'),
+    Config = new ConfigBase(),
+    EnvironmentConfig = new EnvironmentConfigBase();
 
 var express = require('express');
 
@@ -39,6 +41,11 @@ var SocketManager = require('./SocketManager.js'),
     io = require("socket.io").listen(ioServer);
     ioServer.listen(3000);
 
+//test url
+ioServer.get('/', function(req, res){
+    res.end();
+});
+
 //make socket.io listen to external port
 //io = require('socket.io').listen(Config.externalPort());
 
@@ -63,6 +70,9 @@ io.sockets.on('connection', function (socket) {
 var serverConnector = appCreator();
 //listen to internal POST port, which is 8017
 serverConnector.listen(Config.internalPort());
+
+
+/**--------post request listener, listening for new incoming notifications--------**/
 //make the new server listen to localhost:8017/api/v1.0/notifications/push
 serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     console.log('notification push received with params:');
@@ -84,6 +94,8 @@ serverConnector.post(Config.internalNotificationPushPath(), function(req, res){
     res.end();
     
 });
+
+/**--------post request listener, listening for new incoming letters--------**/
 serverConnector.post(Config.internalLetterPushPath(), function(req, res){
     console.log('letter push received with params:');
     console.log(req.body);
@@ -101,9 +113,11 @@ serverConnector.post(Config.internalLetterPushPath(), function(req, res){
     res.end();
 });
 
-
-
 console.log("express app now listening to intenal port " + Config.internalPort() + " and external port " + Config.externalPort());
+
+
+
+
 
 
 /**--------create a simple http server to indicate server alive--------**/
