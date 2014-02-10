@@ -29,17 +29,22 @@ var appCreator = appFactory();
 
 
 var SocketManager = require('./SocketManager.js'),
-    socketManager = new SocketManager(),
+    socketManager = new SocketManager();
 
-    fs = require('fs'),
-    ioOptions = {
-        key: fs.readFileSync('/etc/apache2/ssl/privatekey.pem'),
-        cert: fs.readFileSync('/etc/apache2/ssl/www_routea_ca.crt')
-    },
-    ioServer = require('https').createServer(ioOptions, appCreator());
+if (EnvironmentConfig.getEnvrionment() === Config.getRemoteKey()){
+    var fs = require('fs'),
+        ioOptions = {
+            key: fs.readFileSync('/etc/apache2/ssl/privatekey.pem'),
+            cert: fs.readFileSync('/etc/apache2/ssl/www_routea_ca.crt')
+        },
+        ioServer = require('https').createServer(ioOptions, appCreator());
 
-    io = require("socket.io").listen(ioServer);
-    ioServer.listen(Config.externalPort());
+        io = require("socket.io").listen(ioServer);
+        ioServer.listen(Config.externalPort());
+}
+else{
+    io = require('socket.io').listen(Config.externalPort());
+}
 
 
 
