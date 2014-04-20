@@ -3,9 +3,12 @@
     "version": "1.0.0",
     "description": "Relay Server for the badstudent",
     "dependencies": {
-        "socket.io": "latest",
-        "express": "latest",
-        "jade": "latest"
+        "socket.io": "~0.9.16",
+        "express": "~4.0.0",
+        "jade": "~1.3.1",
+        "body-parser":"*",
+        "cookie-parser":"*",
+        "method-override":"*"
     },
     "author": "Matthew"
 }

@@ -5,26 +5,24 @@ var ConfigBase = require('./Config.js'),
     Config = new ConfigBase(),
     EnvironmentConfig = new EnvironmentConfigBase();
 
-var express = require('express');
+var express = require('express'),
+    bodyParser = require('body-parser'),
+    cookieParser = require('cookie-parser');
+    methodOverride = require('method-override');
 
 
 var appFactory = function(){
 
     return function (){
         var app = express();
-        //configure the basic app behaviours
-        app.configure(function(){
-            app.enable('jsonp callback');
-            app.use(express.bodyParser());
-            app.use(express.cookieParser());
-            app.use(express.methodOverride());
-            app.use(app.router);
-        });
+        app.enable('jsonp callback');
+        app.use(bodyParser());
+        app.use(cookieParser());
+        app.use(methodOverride());
         return app;
     };
 };
 var appCreator = appFactory();
-
 
 
 
