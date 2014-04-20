@@ -11,7 +11,6 @@ module.exports = function Config(){
 
 	var _Internal_LetterPush_Path = "/api/v1.0/letter/push";
 
-	var _Remote_Key = "REMOTE";
 
 	return {
 		'internalPort': function (){
@@ -32,10 +31,6 @@ module.exports = function Config(){
 
 		'internalLetterPushPath': function(){
 			return _Internal_LetterPush_Path;
-		},
-
-		'getRemoteKey': function(){
-			return _Remote_Key;
 		}
 	};
 };

@@ -30,8 +30,14 @@ var appCreator = appFactory();
 
 var SocketManager = require('./SocketManager.js'),
     socketManager = new SocketManager();
-
-if (EnvironmentConfig.getEnvrionment() === Config.getRemoteKey()){
+if (EnvironmentConfig.getEnvrionment() === 'LOCAL'){
+    //local
+    console.log('Starting server on local envrionment');
+    io = require('socket.io').listen(Config.externalPort());
+}
+else if (EnvironmentConfig.getEnvrionment() === 'TEST'){
+    //AWS test
+    console.log('Starting server on test envrionment');
     var fs = require('fs'),
         ioOptions = {
             key: fs.readFileSync('/etc/apache2/ssl/privatekey.pem'),
@@ -43,6 +49,8 @@ if (EnvironmentConfig.getEnvrionment() === Config.getRemoteKey()){
         ioServer.listen(Config.externalPort());
 }
 else{
+    //Aliyun production
+    console.log('Starting server on production envrionment');
     io = require('socket.io').listen(Config.externalPort());
 }
 
